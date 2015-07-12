@@ -1,11 +1,6 @@
 /**
  * Настройка модуля, JS-сценарий
  *
- * @package    DIAFAN.CMS
- * @author     diafan.ru
- * @version    5.4
- * @license    http://www.diafan.ru/license.html
- * @copyright  Copyright (c) 2003-2015 OOO «Диафан» (http://www.diafan.ru/)
  */
 
 if ($('select[name=type]').val() != 'reCAPTCHA') {

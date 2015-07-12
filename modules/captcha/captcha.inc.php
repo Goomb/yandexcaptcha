@@ -2,15 +2,15 @@
 /**
  * Подключение для работы с каптчей
  *
- * @package    DIAFAN.CMS
- * @author     diafan.ru
- * @version    5.4
- * @license    http://www.diafan.ru/license.html
- * @copyright  Copyright (c) 2003-2015 OOO «Диафан» (http://www.diafan.ru/)
  */
 
-if (! defined('DIAFAN')) {
-    include dirname(dirname(dirname(__FILE__))).'/includes/404.php';
+if (!defined('DIAFAN')) {
+	$path = __FILE__; $i = 0;
+	while (!file_exists($path.'/includes/404.php'))	{
+        if($i == 10) exit; $i++;
+        $path = dirname($path);
+	}
+	include $path.'/includes/404.php';
 }
 
 /**
@@ -28,7 +28,7 @@ class Captcha_inc extends Model
      */
     public function get($modules = "modules", $error = "", $is_update = false)
     {
-        switch($this->diafan->configmodules('type', 'captcha')) {
+        switch ($this->diafan->configmodules('type', 'captcha')) {
             case 'reCAPTCHA':
                 if (isset($_POST["recaptcha_challenge_field"])) {
                     unset($_POST["recaptcha_challenge_field"]);

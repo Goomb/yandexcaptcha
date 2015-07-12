@@ -1,11 +1,6 @@
 /**
- * JS-сценарий стандартной каптчи
+ * JS-сценарий Яндекс.Каптчи
  *
- * @package    DIAFAN.CMS
- * @author     diafan.ru
- * @version    5.4
- * @license    http://www.diafan.ru/license.html
- * @copyright  Copyright (c) 2003-2015 OOO «Диафан» (http://www.diafan.ru/)
  */
 
 $(document).on('click', '.js_captcha_update, .captcha_update', function () {

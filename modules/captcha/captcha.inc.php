@@ -9,8 +9,7 @@
  * @copyright  Copyright (c) 2003-2015 OOO «Диафан» (http://www.diafan.ru/)
  */
 
-if (! defined('DIAFAN'))
-{
+if (! defined('DIAFAN')) {
     include dirname(dirname(dirname(__FILE__))).'/includes/404.php';
 }
 
@@ -29,16 +28,12 @@ class Captcha_inc extends Model
      */
     public function get($modules = "modules", $error = "", $is_update = false)
     {
-        switch($this->diafan->configmodules('type', 'captcha'))
-        {
+        switch($this->diafan->configmodules('type', 'captcha')) {
             case 'reCAPTCHA':
-                if(isset($_POST["recaptcha_challenge_field"]))
-                {
+                if (isset($_POST["recaptcha_challenge_field"])) {
                     unset($_POST["recaptcha_challenge_field"]);
                     return "recaptcha";
-                }
-                else
-                {
+                } else {
                     $result["public_key"] = $this->diafan->configmodules('recaptcha_public_key', 'captcha');
                     $result["error"] = $error;
                     $result["modules"] = $modules;
@@ -70,8 +65,7 @@ class Captcha_inc extends Model
         $tpl_result = array("error" => $error, "text" => '', "answers" => array());
 
         $capcha = DB::query_fetch_array("SELECT [name], id FROM {captcha} WHERE trash='0' ORDER BY RAND () LIMIT 1");
-        if($capcha)
-        {
+        if ($capcha) {
             $_SESSION["captcha_id"] = $capcha["id"];
             $tpl_result["text"] = $capcha["name"];
             $tpl_result["answers"] = DB::query_fetch_all("SELECT [text], id FROM {captcha_answers} WHERE captcha_id=%d ORDER BY RAND()", $capcha["id"]);
@@ -87,8 +81,7 @@ class Captcha_inc extends Model
      */
     public function error($modules = "modules")
     {
-        switch($this->diafan->configmodules('type', 'captcha'))
-        {
+        switch ($this->diafan->configmodules('type', 'captcha')) {
             case 'reCAPTCHA':
                 return $this->error_recaptcha();
 
@@ -110,17 +103,14 @@ class Captcha_inc extends Model
      */
     private function error_recaptcha()
     {
-        if(empty($_POST["recaptcha_challenge_field"]))
-        {
+        if (empty($_POST["recaptcha_challenge_field"])) {
             $_POST["recaptcha_challenge_field"] = '';
         }
-        if(empty($_POST["recaptcha_response_field"]))
-        {
+        if (empty($_POST["recaptcha_response_field"])) {
             $_POST["recaptcha_response_field"] = '';
         }
         $fp = fsockopen('www.google.com', 80);
-        if($fp)
-        {
+        if ($fp) {
             $param = "privatekey=".urlencode($this->diafan->configmodules('recaptcha_private_key', 'captcha'))."&"
                 ."remoteip=".urlencode(getenv('REMOTE_ADDR'))."&"
                 ."challenge=".urlencode($_POST["recaptcha_challenge_field"])."&"
@@ -136,37 +126,26 @@ class Captcha_inc extends Model
 
             $result = false;
             $resultstr = '';
-            while(!feof($fp))
-            {
+            while (!feof($fp)) {
                 $response = fgets($fp);
-                if($result)
-                {
+                if ($result) {
                     $resultstr .= $response;
                 }
-                if(strpos($response, "Connection: close") !== false)
-                {
+                if (strpos($response, "Connection: close") !== false) {
                     $result = true;
                 }
             }
             fclose($fp);
-            if(strpos($resultstr, 'true') !== false && strpos($resultstr, 'success'))
-            {
+            if (strpos($resultstr, 'true') !== false && strpos($resultstr, 'success')) {
                 return false;
-            }
-            else
-            {
-                if(MOD_DEVELOPER && strpos($resultstr, 'invalid-site-private-key') !== false)
-                {
+            } else {
+                if (MOD_DEVELOPER && strpos($resultstr, 'invalid-site-private-key') !== false) {
                     return $this->diafan->_('Проверьте Rrivate Key для сервиса reCAPTCHA.', false);
-                }
-                else
-                {
+                } else {
                     return $this->diafan->_('Неправильно введен защитный код.', false);
                 }
             }
-        }
-        else
-        {
+        } else {
             return $this->diafan->_('Невозможно подключиться к северу reCAPTCHA.', false);
         }
 
@@ -203,12 +182,10 @@ class Captcha_inc extends Model
      */
     private function error_qa()
     {
-        if(empty($_SESSION["captcha_id"]) || empty($_POST["captcha_answer_id"]))
-        {
+        if (empty($_SESSION["captcha_id"]) || empty($_POST["captcha_answer_id"])) {
             return $this->diafan->_('Выберите правильный ответ.', false);
         }
-        if(! DB::query_result("SELECT COUNT(*) FROM {captcha_answers} WHERE trash='0' AND captcha_id=%d AND id=%d AND is_right='1'", $_SESSION["captcha_id"], $_POST["captcha_answer_id"]))
-        {
+        if (!DB::query_result("SELECT COUNT(*) FROM {captcha_answers} WHERE trash='0' AND captcha_id=%d AND id=%d AND is_right='1'", $_SESSION["captcha_id"], $_POST["captcha_answer_id"])) {
             return $this->diafan->_('Ответ не верный.', false);
         }
         return false;
@@ -224,12 +201,9 @@ class Captcha_inc extends Model
         $api_key = $this->diafan->configmodules('yandexcaptcha_key', 'captcha');
         $url_api = 'http://cleanweb-api.yandex.ru/1.0/';
         $get_captcha_params = array('key' => $api_key);
-        $result = $this->http_req('GET', $url_api . 'get-captcha', $get_captcha_params);
-        $response = new SimpleXMLElement($result);
-        $result = array();
-        $result["img"] = $response->url;
-        $result["captcha"] = $response->captcha;
-        $result["error"] = '';
+        $request = $this->http_req($url_api . 'get-captcha', $get_captcha_params);
+        $response = new SimpleXMLElement($request);
+        $result = array('img' => $response->url, 'captcha' => $response->captcha, 'error' => '');
         return $result;
     }
 
@@ -248,13 +222,12 @@ class Captcha_inc extends Model
                 'value' => $_POST["captcha"],
                 );
 
-        $result = $this->http_req('POST', $url_api . 'check-captcha', $check_captcha_params);
-        $result = new SimpleXMLElement($result);
+        $request = $this->http_req($url_api . 'check-captcha', $check_captcha_params);
+        $result = new SimpleXMLElement($request);
         if (isset($result->ok)) {
             return false;
         } else {
-            $this->result["error"] = 'Неверный код';
-            return $this->diafan->_('Неверный код');
+            return $this->result["error"] = $this->diafan->_('Неверный код');
         }
         return false;
     }
@@ -262,9 +235,11 @@ class Captcha_inc extends Model
     /**
      * Генератор запросов для Яндекс.Каптчи
      *
+     * @param string $url адрес для отправки запроса
+     * @param array $params массив параметров запроса
      * @return string
      */
-    private function http_req ($type, $url, $params) {
+    private function http_req ($url, $params) {
         $url = parse_url($url);
         if ($url['scheme'] != 'http') {
             die('Error: Only HTTP request are supported !');
